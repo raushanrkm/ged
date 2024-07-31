@@ -1,28 +1,16 @@
 import base64
 import sys
-
 import requests
-from fastapi.templating import Jinja2Templates
 import pyautogui
 from openai import OpenAI
 from pydub import AudioSegment
 import io
-import speech_recognition as sr
 from pynput.keyboard import Listener
 from pygame import mixer
-import  re
-
-# OpenAI API Key
-
-# freq = 44100
-# duration = 5
-# app = FastAPI()
-# templates = Jinja2Templates(directory='templates')
-# all_processes = []
 # r = sr.Recognizer()
-# mic = sr.Microphone(device_index=0)
+# mic = sr.Microphone(device_index=3)
+api_key = "******"
 
-api_key = "*****"
 image_path = "/Users/raushanrkm/Desktop/workspace/ged/test.png"
 speech_file_path = "/Users/raushanrkm/Desktop/workspace/ged/test.mp3"
 
@@ -32,8 +20,6 @@ headers = {
     "Content-Type": "application/json",
     "Authorization": f"Bearer {api_key}"
 }
-
-
 
 
 
@@ -73,35 +59,6 @@ def onKeyPress(key):
     except Exception as ex:
         print('There was an error : ', ex)
         sys.argv.clear()
-
-
-# # @app.get('/', response_class=HTMLResponse)
-# def main(request: Request):
-#     process = multiprocessing.Process(target=startMicLoop)
-#     process.start()
-#     return templates.TemplateResponse('index.html', {'request': request})
-
-
-# @app.get("'/output")
-# def output(request: Request):
-    # screenshot = pyautogui.screenshot()
-    # screenshot.save(image_path)
-    # base64_image = encode_image(image_path)
-    # time.sleep(1)
-    # userText=queue.get ()
-    # print (userText)
-    # resText=gpt4o model (userText, base64_image)
-    # tts_audio=audio_trans (resText)
-    # audio = Audiosegment.from_file lio.BytesIO(tts_audio), format="mp3")
-    # process = multiprocessing. Process (target-play audio, args=(audio, queue) )
-    # process.start ()
-    # thread = Thread ( target=play_audio, args=(audio, queue) )
-    # all_processes. append (process)
-    # play (audio)
-    # return "success"
-
-    # Function to encode the image
-
 
 def encode_image(image_path):
     with open(image_path, "rb") as image_file:
@@ -174,26 +131,6 @@ def startMicLoop(text):
         print(e)
         print("---restart again")
 
-
-def play_audio():
-    mixer.init()
-    mixer.music.load(speech_file_path)
-    mixer.music.set_volume(0.7)
-    mixer.music.play()
-    while True:
-        if query == 'p':
-
-            # Pausing the music
-            mixer.music.pause()
-        elif query == 'r':
-
-            # Resuming the music
-            mixer.music.unpause()
-        elif query == 'e':
-
-            # Stop the mixer
-            mixer.music.stop()
-            break
 def gpt4o_model(userText, base64_image):
     payload = {
         "model": "gpt-4o",
@@ -217,14 +154,59 @@ def gpt4o_model(userText, base64_image):
         "max_tokens": 4000
     }
     response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
-    resJson = response.json();
+    resJson = response.json()
     resText = resJson["choices"][0]["message"]["content"]
     print(resText)
     return resText
 
 
-def audio_to_text(audio, queue):
-    return r.recognize_google(audio, language='en-US')
+def enable_mic( key):
+    global stop_mic
+    with mic as source:
+        r.adjust_for_ambient_noise(source)
+
+    while (True):
+          try:
+            with mic as source:
+                audio = r.listen(source)
+            text = r.recognize_google(audio, language='en-US')
+            print(text)
+            username = input("Enter username:")
+            if username:
+                print(username)
+            else:
+                print("nothing")
+
+          except Exception as ex:
+              3/4
+
+
+# # @app.get('/', response_class=HTMLResponse)
+# def main(request: Request):
+#     process = multiprocessing.Process(target=startMicLoop)
+#     process.start()
+#     return templates.TemplateResponse('index.html', {'request': request})
+
+
+# @app.get("'/output")
+# def output(request: Request):
+    # screenshot = pyautogui.screenshot()
+    # screenshot.save(image_path)
+    # base64_image = encode_image(image_path)
+    # time.sleep(1)
+    # userText=queue.get ()
+    # print (userText)
+    # resText=gpt4o model (userText, base64_image)
+    # tts_audio=audio_trans (resText)
+    # audio = Audiosegment.from_file lio.BytesIO(tts_audio), format="mp3")
+    # process = multiprocessing. Process (target-play audio, args=(audio, queue) )
+    # process.start ()
+    # thread = Thread ( target=play_audio, args=(audio, queue) )
+    # all_processes. append (process)
+    # play (audio)
+    # return "success"
+
+    # Function to encode the image
 
 
 with Listener(on_press=onKeyPress) as listener:
