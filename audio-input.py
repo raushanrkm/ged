@@ -16,6 +16,7 @@ import keyboard
 
 
 
+
 # OpenAI API Key
 
 freq = 44100
@@ -24,22 +25,22 @@ duration = 5
 # templates = Jinja2Templates(directory='templates')
 # all_processes = []
 r = sr.Recognizer()
-mic = sr.Microphone(device_index=1)
-api_key = "*"
-client = OpenAI(api_key="*****")
+mic = sr.Microphone(device_index=2)
+api_key = "**************"
+client = OpenAI(api_key=api_key)
+
 
 def startMicLoop():
     global question
+    # global controlButton
     question = None
     with mic as source:
         r.adjust_for_ambient_noise(source)
     # continuously listen for input until interrupted
-
-    while True:
-        input()
-        try:
+    print(" inside mic")
+    try:
             with mic as source:
-                audio = r.listen(source, timeout=3, phrase_time_limit=5)
+                audio = r.listen(source, timeout=5, phrase_time_limit=10)
                 with open("audio_file.wav", "wb") as file:
                     file.write(audio.get_wav_data())
             audio_file = open("audio_file.wav", "rb")
@@ -48,13 +49,13 @@ def startMicLoop():
             question = translation.text.lower()
             if len(question) < 5 or "thank" in question or "bye" in question  or "okay" in question or "yeah" in question or "yep" in question or ". ." in question:
                 question = 'a'
-                continue
             else:
                 print(question)
                 ask_question(question)
                 question ='a'
-        except Exception as e:
+    except Exception as e:
             print(e)
+
 def ask_question(question):
     if len(question) < 5:
         return
@@ -69,9 +70,16 @@ def ask_question(question):
     )
 
     final_dictionary = json.loads(chat_completion.json())
+    # print(final_dictionary)
     resText = final_dictionary["choices"][0]["message"]["content"]
     print(resText)
     print("done")
 
 
-startMicLoop()
+def onKeyPress(key):
+    strKey = str(key)
+    print(strKey)
+    if strKey == "Key.shift_r":
+        startMicLoop()
+with Listener(on_press=onKeyPress) as listener:
+    listener.join()

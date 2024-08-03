@@ -9,7 +9,7 @@ from pynput.keyboard import Listener
 from pygame import mixer
 # r = sr.Recognizer()
 # mic = sr.Microphone(device_index=3)
-api_key = "**************"
+# api_key = "********************"
 
 image_path = "/Users/raushanrkm/Desktop/workspace/ged/test.png"
 speech_file_path = "/Users/raushanrkm/Desktop/workspace/ged/test.mp3"
@@ -35,7 +35,7 @@ def onKeyPress(key):
             # todo without image
             sys.argv.clear()
         if strKey == "Key.media_play_pause":
-            text = "This is software engineering interview question. solve this question in java with most efficient time complexity and space complexity with explanation"
+            text = "This is software engineering interview question. solve this question"
             startMicLoop(text)
         if eligible_to_play and strKey == "'a'":
             print("play")
