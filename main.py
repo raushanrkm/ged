@@ -7,12 +7,10 @@ from pydub import AudioSegment
 import io
 from pynput.keyboard import Listener
 from pygame import mixer
-# r = sr.Recognizer()
-# mic = sr.Microphone(device_index=3)
-api_key = "**************"
 
 image_path = "/Users/raushanrkm/Desktop/workspace/ged/test.png"
 speech_file_path = "/Users/raushanrkm/Desktop/workspace/ged/test.mp3"
+text_output_file = '/Users/raushanrkm/Desktop/workspace/ged/test.txt'
 
 eligible_to_play = False
 mixer.init()
@@ -20,6 +18,7 @@ headers = {
     "Content-Type": "application/json",
     "Authorization": f"Bearer {api_key}"
 }
+client = OpenAI(api_key=api_key)
 
 
 
@@ -32,7 +31,7 @@ def onKeyPress(key):
             text = sys.argv[1]
             text = text.replace("#", "") if text.startswith(
                 "#") else f"This is software engineering interview question. please draw system diagram of {text} with explanation "
-            # todo without image
+            ask_question(text)
             sys.argv.clear()
         if strKey == "Key.media_play_pause":
             text = "This is software engineering interview question. solve this question in java with most efficient time complexity and space complexity with explanation"
@@ -60,7 +59,6 @@ def onKeyPress(key):
     except Exception as ex:
         print('There was an error : ', ex)
         sys.argv.clear()
-
 def encode_image(image_path):
     with open(image_path, "rb") as image_file:
         return base64.b64encode(image_file.read()).decode('utf-8')
@@ -76,59 +74,18 @@ def audio_trans(text):
 
 def startMicLoop(text):
     global eligible_to_play
-    # with mic as source:
-    #     r.adjust_for_ambient_noise(source)
-    # continuously listen for input until interrupted
-
-    # while True:
-
-    # with mic as source:
-    #     audio = r.listen(source, phrase_time_limit=10)
-    # resText=''
-
     try:
-        # use Google Speech Recognition to transcribe audio
-        # process = multiprocessing. Process (target=audio_to_text, args=(audio, queue) )
-        # text = r.recognize_google(audio, language='en-US')
-        # print("You said:", text)
-        # # check if sentence is complete by looking for punctuation marks
-        # if text.endswith('.') or text.endswith('?') or text.endswith(' !'):
-        #     print("Sentence complete.")
-        # if 'stop' in text:
-        #     for process in all_processes:
-        #         process.terminate()
-        #     continue;
-
         screenshot = pyautogui.screenshot()
         screenshot.save(image_path)
         base64_image = encode_image(image_path)
         resText = gpt4o_model(text, base64_image)
-        file = '/Users/raushanrkm/Desktop/workspace/ged/test.txt'
-        with open(file, 'w') as file_over_write:
+        with open(text_output_file, 'w') as file_over_write:
                 file_over_write.write(resText)
         tts_audio = audio_trans(resText)
         audio = AudioSegment.from_file(io.BytesIO(tts_audio), format="mp3")
         audio.export(speech_file_path, format='mp3')
         eligible_to_play = True
-
-        # play _audio (audio) i
-        # if not all_processes:
-        #     process = multiprocessing.Process(target=play_audio)
-        #     process.start()
-        #     all_processes.append(process)
-        # else:
-        #     for process in all_processes:
-        #         process.terminate()
-        #         process = multiprocessing.Process(target=play_audio)
-        #         process.start()
-        #         all_processes.append(process)
-
-    # except sr.UnknownValueError:
-    #     a = 8
-    # except sr.RequestError:
-    #     print("Sorry, could not request results from the service.")
     except Exception as e:
-        print(e)
         print("---restart again")
 
 def gpt4o_model(userText, base64_image):
@@ -158,34 +115,24 @@ def gpt4o_model(userText, base64_image):
     resText = resJson["choices"][0]["message"]["content"]
     print(resText)
     return resText
+def ask_question(question):
+    if len(question) < 5:
+        return
+    chat_completion = client.chat.completions.create(
+        messages=[
+            {
+                "role": "user",
+                "content": f" this is software engineering question {question} ? please answer in short with few "
+                           f"bullet points only",
+            }
+        ],
+        model="gpt-3.5-turbo",
+    )
 
-
-# # @app.get('/', response_class=HTMLResponse)
-# def main(request: Request):
-#     process = multiprocessing.Process(target=startMicLoop)
-#     process.start()
-#     return templates.TemplateResponse('index.html', {'request': request})
-
-
-# @app.get("'/output")
-# def output(request: Request):
-    # screenshot = pyautogui.screenshot()
-    # screenshot.save(image_path)
-    # base64_image = encode_image(image_path)
-    # time.sleep(1)
-    # userText=queue.get ()
-    # print (userText)
-    # resText=gpt4o model (userText, base64_image)
-    # tts_audio=audio_trans (resText)
-    # audio = Audiosegment.from_file lio.BytesIO(tts_audio), format="mp3")
-    # process = multiprocessing. Process (target-play audio, args=(audio, queue) )
-    # process.start ()
-    # thread = Thread ( target=play_audio, args=(audio, queue) )
-    # all_processes. append (process)
-    # play (audio)
-    # return "success"
-
-    # Function to encode the image
+    final_dictionary = json.loads(chat_completion.json())
+    # print(final_dictionary)
+    resText = final_dictionary["choices"][0]["message"]["content"]
+    print(resText)
 
 
 with Listener(on_press=onKeyPress) as listener:
