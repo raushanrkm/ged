@@ -34,7 +34,7 @@ def onKeyPress(key):
             ask_question(text)
             sys.argv.clear()
         if strKey == "Key.media_play_pause":
-            text = "This is software engineering interview question. solve this question in java with most efficient time complexity and space complexity with explanation"
+            text = "This is software engineering interview question. solve this question with explanation with most efficient time complexity and space complexit in java"
             startMicLoop(text)
         if eligible_to_play and strKey == "'a'":
             print("play")
@@ -60,11 +60,10 @@ def onKeyPress(key):
         print('There was an error : ', ex)
         sys.argv.clear()
 def encode_image(image_path):
-    with open(image_path, "rb") as image_file:
+    with open(image_path, "rb") as image_file:ssdds
         return base64.b64encode(image_file.read()).decode('utf-8')
 
 def audio_trans(text):
-    client = OpenAI()
     response = client.audio.speech.create(
         model="tts-1",
         voice="alloy",
@@ -79,14 +78,16 @@ def startMicLoop(text):
         screenshot.save(image_path)
         base64_image = encode_image(image_path)
         resText = gpt4o_model(text, base64_image)
-        with open(text_output_file, 'w') as file_over_write:
-                file_over_write.write(resText)
+        # with open(text_output_file, 'w') as file_over_write:
+        #         file_over_write.write(resText)
         tts_audio = audio_trans(resText)
+        print("done")
+
         audio = AudioSegment.from_file(io.BytesIO(tts_audio), format="mp3")
         audio.export(speech_file_path, format='mp3')
         eligible_to_play = True
     except Exception as e:
-        print("---restart again")
+        print("click again")
 
 def gpt4o_model(userText, base64_image):
     payload = {
@@ -113,7 +114,9 @@ def gpt4o_model(userText, base64_image):
     response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
     resJson = response.json()
     resText = resJson["choices"][0]["message"]["content"]
+    print("*************************************************************************************************")
     print(resText)
+    print("*************************************************************************************************")
     return resText
 def ask_question(question):
     if len(question) < 5:
@@ -132,7 +135,11 @@ def ask_question(question):
     final_dictionary = json.loads(chat_completion.json())
     # print(final_dictionary)
     resText = final_dictionary["choices"][0]["message"]["content"]
+    print("*************************************************************************************************")
     print(resText)
+    print("*************************************************************************************************")
+    print("done")
+
 
 
 with Listener(on_press=onKeyPress) as listener:
